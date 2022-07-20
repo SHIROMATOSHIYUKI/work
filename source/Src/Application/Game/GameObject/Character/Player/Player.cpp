@@ -1,6 +1,7 @@
 ﻿#include "Player.h"
 #include "../../Gun/Gun.h"
 #include "../../Effect2D/Effect2D.h"
+#include"../../Manager/EnemyManager/EnemyManager.h"
 
 #include"../../../../Utility/Easing/Easing.h"
 #include"../../../../Utility/DebugObject/DebugObject.h"
@@ -58,8 +59,9 @@ void Player::Update()
 	if (!m_deathFlg) { UpdateCIE(); }
 	// ダメージ表現処理処理
 	DamageRep();
-	// HP表現処理
+	// HP表現処理。clearした時は処理を行わない
 	HpRep();
+
 	// カメラ更新
 	UpdateCamera();
 	// 銃更新
@@ -73,7 +75,9 @@ void Player::Update()
 }
 
 void Player::Draw2D()
-{
+{	
+	// クリア時は処理を通らないようにする
+	if (GameEnemyManeger.get()->lastEnemyIsAlive()){return;}
 	Math::Rectangle rect = JsonR("fullScreenRect");
 	SHADER->m_spriteShader.DrawTex(m_damageTex.get(), 0, 0, &rect, &m_damageColor);
 	SHADER->m_spriteShader.DrawTex(m_dyingFrameTex.get(), 0, 0, &rect, &m_dyingFrameColor);
@@ -162,29 +166,24 @@ void Player::UpdateMove(Math::Vector3& dstMove)
 
 void Player::UpdateCollision()
 {
+	// ①for文でゲームオブジェクトリストをすべて回す
 	for (const std::shared_ptr<GameObject>& spObject : GameSystem::GetInstance().GetObjects())
 	{
+		// ②設定されたクラスIDがEnemyだった場合判定を行う
 		if (spObject->GetClassID() == GameObject::eEnemy)
 		{
-			//std::shared_ptr<EnemyManager> enMgr = std::dynamic_pointer_cast<EnemyManager>(spObject);
-			//if (enMgr)
-			//{
-			//	for (const std::shared_ptr<GameObject>& spEnObject : enMgr->)
-			//	{
-			//		SphereInfo sphereInfo(GetPos() + m_bumpSphereInfo.m_pos, m_bumpSphereInfo.m_radius);
-			//		BumpResult bumpResult;
+			SphereInfo sphereInfo(GetPos() + m_bumpSphereInfo.m_pos, m_bumpSphereInfo.m_radius);
+			BumpResult bumpResult;
 
-			//		// 自分と当たる対象に呼び出してもらう
-			//		bool result = spEnObject->CheckCollisionBump(
-			//			sphereInfo,
-			//			bumpResult);
-			//		if (result)
-			//		{
-			//			// 押し戻す処理
-			//			m_worldPos += bumpResult.m_pushVec;
-			//		}
-			//	}
-			//}
+			// 自分と当たる対象に呼び出してもらう
+			bool result = spObject->CheckCollisionBump(
+				sphereInfo,
+				bumpResult);
+			if (result)
+			{
+				// 押し戻す処理
+				m_worldPos += bumpResult.m_pushVec;
+			}
 		}
 		else
 		{		// ステージマップ横方向の判定
@@ -255,6 +254,8 @@ void Player::DamageRep()
 
 void Player::HpRep()
 {
+	// クリア時は処理を通らないようにする
+	if (GameEnemyManeger.get()->lastEnemyIsAlive()){return;}
 	// カラーの透明値を常に更新
 	m_dyingFrameColor = { 1,1,1,m_dyingFrameAlpha };
 	m_dyingWholeColor = { 1,1,1,m_dyingWholeAlpha };

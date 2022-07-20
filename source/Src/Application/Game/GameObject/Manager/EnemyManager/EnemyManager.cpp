@@ -46,8 +46,12 @@ void EnemyManager::CreateEnemy(Math::Vector3 pos, Math::Vector3 spornPos, bool L
 	spEnemy->Init();
 	GameInstance.AddObject(spEnemy);
 
+	// 最終面の敵の設定
 	if (LastPageEnemy)
 	{
+		// クリアエネミーflagを立てる
+		// 最終面の敵の数のカウンタを1進める
+		// クリアエネミーのリストに入れる
 		spEnemy->SetClearEnemy(true);
 		lastEnemyCount++;
 		m_wpClearEnemy.push_back(spEnemy);
@@ -68,9 +72,6 @@ void EnemyManager::Update()
 		lastEnemyFlg = true;
 	}
 
-	// クリアエネミーリストに敵がいなかった場合
-	//if (m_wpClearEnemy.size() == 0)
-	//{lastEnemyFlg = true;}
 }
 
 void EnemyManager::Release()

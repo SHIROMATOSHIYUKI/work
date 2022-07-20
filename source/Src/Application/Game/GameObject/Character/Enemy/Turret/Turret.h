@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include"../EnemyBase.h"
 
-//不安追加
 class Player;
 
 class Turret : public EnemyBase
@@ -43,7 +42,7 @@ private:
 	void HeadRotate();		// 回転に関する処理
 	float GetBetweenAngX(const Math::Vector3& dir1, const Math::Vector3& dir2);
 	float GetBetweenAngY(const Math::Vector3& dir1, const Math::Vector3& dir2);
-	float betweenAngY;
+	float betweenAngY = 0.0f;
 	Math::Vector3 m_worldPos;		// 座標
 	Math::Vector3 m_headRot;		// 回転
 	std::shared_ptr<Player> m_spTarget;
@@ -56,13 +55,13 @@ private:
 	void FovAngle();	// 視野円錐判定
 	void FovSphere();	// 視野球判定
 
-	float m_fovAngle;
+	float m_fovAngle = 0.0f;
 
 	SphereInfo fovSphereInfo;
 	bool m_sphereHit = false;
 	bool m_angleHit = false;
 	bool m_fovOllHit = false;
-	float m_betweenDegree;
+	float m_betweenDegree = 0.0f;
 
 	void FovObject();	// オブジェクト判定 
 	bool m_visiblePlayerFlg = false;	// Playerが見えない状態
@@ -78,13 +77,14 @@ private:
 	//攻撃警告
 	//==========
 	std::shared_ptr<KdTexture> m_spWarningTex;	// 警告画像
-	int m_warningCount;
+	int m_warningCount = 0;
 
 	//=========
 	// リロード
 	//=========
 	bool	m_reloadSoundFlg = true;
-	int		m_reloadCount;
+	int		m_reloadCount = 0;
+	std::shared_ptr<KdSoundInstance> m_reloadSound;
 
 	//=======
 	// 死亡時

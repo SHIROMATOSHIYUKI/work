@@ -195,9 +195,11 @@ void Turret::ActionReload::Update(Turret& owner)
 	// リロード音の再生(1度だけ)
 	if (owner.m_reloadSoundFlg)	
 	{
-		std::shared_ptr<KdSoundInstance> spSoundInstance = nullptr;
-		spSoundInstance = GameAudio.Play3D(owner.JsonS("sound", "reload"), owner.GetPos());
-		spSoundInstance->SetVolume(owner.JsonF("volume","reload"));
+		owner.m_reloadSound = GameAudio.Play3D(owner.JsonS("sound", "reload"), owner.GetPos());
+		owner.m_reloadSound->SetVolume(owner.JsonF("volume", "reload"));
+		//std::shared_ptr<KdSoundInstance> spSoundInstance = nullptr;
+		//spSoundInstance = GameAudio.Play3D(owner.JsonS("sound", "reload"), owner.GetPos());
+		//spSoundInstance->SetVolume(owner.JsonF("volume","reload"));
 		owner.m_reloadSoundFlg = false;
 	}
 
@@ -218,6 +220,7 @@ void Turret::ActionMiss::Update(Turret& owner)
 	if (owner.m_fovOllHit)	// 発見したら
 	{
 		owner.m_spActionState = std::make_shared<ActionChase>();	// 追跡
+
 		std::shared_ptr<KdSoundInstance> spSoundInstance = nullptr;
 		spSoundInstance = GameAudio.Play3D(owner.JsonS("sound", "discovery"), owner.GetPos());
 		spSoundInstance->SetVolume(owner.JsonF("volume", "discovery"));
@@ -247,12 +250,12 @@ void Turret::ActionDeath::Update(Turret& owner)
 	// ①爆発音とエネミーマネージャーで死んだことを伝える
 	if (owner.DeathMoment)
 	{
-
+		// 爆発音
 		std::shared_ptr<KdSoundInstance> spSoundInstance = nullptr;
 		spSoundInstance = GameAudio.Play3D(owner.JsonS("sound", "death"), owner.GetPos());
 		spSoundInstance->SetVolume(owner.JsonF("volume", "death"));
-
-
+		// リロード音、流れていたら停止
+		if (owner.m_reloadSound) {owner.m_reloadSound->Stop();}
 		if(owner.m_clearEnemy)
 		{ 
 			std::weak_ptr<EnemyManager> wpEnemyManager = GameInstance.WorkEnemyManeger();
@@ -464,7 +467,6 @@ void Turret::ShotBullet()
 //		if (KdSphereToMesh(info.m_pos, info.m_radius,
 //			*(dataNode.m_spMesh.get()), workNode.m_worldTransform * m_mWorld, localPushedPos))
 //		{
-//			m_Hp -= 1;
 //			result.m_isHit = true;
 //		}
 //	}
